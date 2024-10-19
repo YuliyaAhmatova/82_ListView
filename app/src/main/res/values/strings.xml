@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">82_ListView</string>
+    <string name="exit">Exit</string>
+    <string name="input_name">Введите имя</string>
+    <string name="input_age">Введите возраст</string>
+    <string name="save">Сохранить</string>
+</resources>
