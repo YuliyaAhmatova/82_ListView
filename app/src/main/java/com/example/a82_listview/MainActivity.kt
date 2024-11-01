@@ -12,12 +12,14 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.isDigitsOnly
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Removable {
 
-    val notes: MutableList<User> = mutableListOf()
+    private val notes: MutableList<String> = mutableListOf()
+    private var adapter: ArrayAdapter<String>? = null
 
     private lateinit var toolbarMain: androidx.appcompat.widget.Toolbar
 
@@ -49,25 +51,29 @@ class MainActivity : AppCompatActivity() {
         toolbarMain.setLogo(R.drawable.baseline_format_list_bulleted_add_24)
 
         listViewLV = findViewById(R.id.listViewLV)
-        val adapter = ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, notes)
+        adapter = ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, notes)
         listViewLV.adapter = adapter
 
         saveBTN.setOnClickListener {
-            if (nameET.text.isEmpty() || ageET.text.isEmpty()) {
+            if (nameET.text.isEmpty() || ageET.text.isEmpty() || !ageET.text.isDigitsOnly()) {
+                Toast.makeText(this, "Вы заполнили не все поля, либо ввели неверное значение", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            val user = User(nameET.text.toString(), ageET.text.toString().toInt())
+            val user = User(nameET.text.toString(), ageET.text.toString().toInt()).toString()
             notes.add(user)
-            adapter.notifyDataSetChanged()
+            adapter!!.notifyDataSetChanged()
             nameET.text.clear()
             ageET.text.clear()
         }
 
         listViewLV.onItemClickListener =
             AdapterView.OnItemClickListener { parent, v, position, id ->
-                val note = adapter.getItem(position)
-                adapter.remove(note)
-                Toast.makeText(this, "Пользователь удалён: $note", Toast.LENGTH_LONG).show()
+                val note = adapter!!.getItem(position)
+                val dialog = MyDialog()
+                val args = Bundle()
+                args.putString("note", note.toString())
+                dialog.arguments = args
+                dialog.show(supportFragmentManager, "custom")
             }
     }
 
@@ -81,5 +87,9 @@ class MainActivity : AppCompatActivity() {
             R.id.exitMenuMain -> finish()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun remove(note: String?) {
+        adapter?.remove(note)
     }
 }
